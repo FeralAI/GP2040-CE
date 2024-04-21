@@ -134,11 +134,11 @@ const ConfiguratorButtonRow = ({ label, prevStep, nextStep }) => {
 
     return (
         <Row className='configurator-form-button-row'>
-            <Col xs={12} md={8}>
-                {prevStep >= 0 && <Button onClick={() => setState({ ...state, step: prevStep })}><strong>&lt; BACK</strong></Button>}
+            <Col xs={12} md={'auto'} className='col-auto me-auto'>
+                {prevStep >= 0 && <Button onClick={() => setState({ ...state, step: prevStep })}><strong>◀ BACK</strong></Button>}
             </Col>
-            <Col xs={12} md={4}>
-                {nextStep >= 0 && <Button onClick={() => setState({ ...state, step: nextStep })}><strong>{label} &gt;</strong></Button>}
+            <Col xs={12} md={'auto'}>
+                {nextStep >= 0 && <Button onClick={() => setState({ ...state, step: nextStep })}><strong>{label} ▶</strong></Button>}
             </Col>
         </Row>
     );
@@ -148,7 +148,7 @@ const ConfiguratorButtonRow = ({ label, prevStep, nextStep }) => {
 /* Page Step Components */
 
 /* STEP 0 - Welcome Message */
-const LEDConfigurator_Welcome = () => {
+const LEDConfigurator_StartStep = () => {
     const { state, setState } = useContext(LEDConfiguratorContext);
     
     if (state.step !== LedConfiguatorSteps.WELCOME)
@@ -158,16 +158,17 @@ const LEDConfigurator_Welcome = () => {
         <Container fluid>
             <ConfiguratorHeader>
                 <p>
-                    The GP2040-CE LED Configurator will walk you step-by-step
-                    through setting up the LED chain in your controller.
+                    The LED Configurator will walk you step-by-step
+                    through setting up the RGB LEDs in your controller.
                 </p>
                 <p>
-                    Please have the technical information for your LEDs ready,
-                    as you will need it during hardware configuration.
+                    If you do not know the technical details of your LEDs,
+                    please have the documentation (manual, datasheet, etc.)
+                    ready as you will need it for this process.
                 </p>
             </ConfiguratorHeader>
             <ConfiguratorButtonRow
-                label='BEGIN'
+                label='CONFIGURE RGB LED HARDWARE'
                 prevStep={undefined}
                 nextStep={LedConfiguatorSteps.HARDWARE}
             />
@@ -177,8 +178,9 @@ const LEDConfigurator_Welcome = () => {
 
 /* STEP 1 - Hardware Configuration */
 /* This step should guide the user to easily configure hardware defines */
-const LEDConfigurator_HardwareConfig = () => {
+const LEDConfigurator_HardwareConfigStep = () => {
     const { state, setState } = useContext(LEDConfiguratorContext);
+    const [showAdvanced, setShowAdvanced] = useState(0);
 
     if (state.step !== LedConfiguatorSteps.HARDWARE)
         return <></>;
@@ -186,9 +188,90 @@ const LEDConfigurator_HardwareConfig = () => {
     return (
         <Container fluid>
             <ConfiguratorHeader>
+                <ConfiguratorNote>
+                    <strong>RGB LED HARDWARE CONFIGURATION TIPS</strong>
+                    <ul className='configurator-note-list'>
+                        <li><strong>RGB LEDs connect, in series (daisy-chained), to a single data line</strong>. This is referred to as your <strong>LED Chain</strong>.</li>
+                        <li><strong>The maximum LED brightness <em>may</em> be limited</strong> by the type and number of LEDs in use.</li>
+                        <li>If you're using NeoPixel modules or clones, the default type and color format should be sufficient.</li>
+                        <li>Use LED strips and modules of the same type, and preferrably from the same manufacturer, to ensure proper compatibility.</li>
+                    </ul>
+                </ConfiguratorNote>
+            </ConfiguratorHeader>
+
+            <ConfiguratorFormRow label='Which pin is the RGB LED data line connected to?'>
+                <Form.Select>
+                    <option value="0">PIN0</option>
+                </Form.Select>
+            </ConfiguratorFormRow>
+            <ConfiguratorFormRow label='What type are the RGB LEDs?'>
+                <Form.Select>
+                    {LED_MODULE_TYPES.map((t, i) =>
+                        <option key={`module-type-option-${i}`} value={t.value}>{t.label}</option>
+                    )}
+                </Form.Select>
+            </ConfiguratorFormRow>
+            <ConfiguratorFormRow label='What color format do the RGB LEDs use?'>
+                <Form.Select>
+                    {LED_COLOR_FORMATS.map((f, i) =>
+                        <option key={`color-format-option-${i}`} value={f.value}>{f.label}</option>
+                    )}
+                </Form.Select>
+            </ConfiguratorFormRow>
+            <ConfiguratorFormRow label='How many RGB LEDs are on the chain?'>
+                <Form.Control type="number"></Form.Control>
+            </ConfiguratorFormRow>
+            <ConfiguratorFormRow label='What is the maximum brightness percentage?'>
+                <Form.Control
+                    type="number"
+                    min={0} max={100}
+                    value={state.brightness}
+                    onChange={(e) =>
+                        setState({ ...state, brightness: toInteger(e.target.value) })
+                    }
+                />
+            </ConfiguratorFormRow>
+            <ConfiguratorFormRow label='Keep RGB LEDs on when the connected system is goes to sleep?'>
+                <Form.Check inline type='radio' id='suspend-on' name='suspend' label='Yes' />
+                <Form.Check inline type='radio' id='suspend-off' name='suspend' label='No' />
+            </ConfiguratorFormRow>
+            <ConfiguratorFormRow label='Show Advanced Settings?'>
+                <Form.Check inline id="show-advanced" name="show-advanced" value={showAdvanced} onChange={() => setShowAdvanced(showAdvanced === 1 ? 0 : 1)} />
+            </ConfiguratorFormRow>
+            
+            {showAdvanced === 1 &&
+                <>
+                    <ConfiguratorFormRow label='Maximum Current Draw (mA)'>
+                        <Form.Control type="number"></Form.Control>
+                    </ConfiguratorFormRow>
+                    <ConfiguratorFormRow label='Data Clock Rate (KHz)'>
+                        <Form.Control type="number"></Form.Control>
+                    </ConfiguratorFormRow>
+                </>
+            }
+            
+            <ConfiguratorButtonRow
+                label='CONFIGURE RGB LED GROUPS'
+                prevStep={LedConfiguatorSteps.WELCOME}
+                nextStep={LedConfiguatorSteps.GROUPSELECT}
+            />
+        </Container>
+    );
+};
+
+/* STEP 2 - Group Select */
+/* This step will be repeated for each group a user defines */
+const LEDConfigurator_GroupConfigStep = () => {
+    const { state, setState } = useContext(LEDConfiguratorContext);
+
+    if (state.step !== LedConfiguatorSteps.GROUPSELECT)
+        return <></>;
+    
+    return (
+        <Container fluid>
+            <ConfiguratorHeader>
                 <p>
-                    The page will help you configure the hardware settings for your LED chain. If you need information regarding
-                    the capabilities of your LEDs, please refer to their datasheet or the vendor manual for details.
+                    LEDs are grouped by their behavior on the controller.
                 </p>
                 <ConfiguratorNote>
                     <strong>LED HARDWARE CONFIGURATION TIPS</strong>
@@ -200,64 +283,6 @@ const LEDConfigurator_HardwareConfig = () => {
                     </ul>
                 </ConfiguratorNote>
             </ConfiguratorHeader>
-
-            <ConfiguratorFormRow label='Which pin is the LED data line connected to?'>
-                <Form.Select>
-                    <option value="0">PIN0</option>
-                </Form.Select>
-            </ConfiguratorFormRow>
-            <ConfiguratorFormRow label='What type of LEDs?'>
-                <Form.Select>
-                    {LED_MODULE_TYPES.map((t, i) =>
-                        <option key={`module-type-option-${i}`} value={t.value}>{t.label}</option>
-                    )}
-                </Form.Select>
-            </ConfiguratorFormRow>
-            <ConfiguratorFormRow label='What color format do the LEDs use?'>
-                <Form.Select>
-                    {LED_COLOR_FORMATS.map((f, i) =>
-                        <option key={`color-format-option-${i}`} value={f.value}>{f.label}</option>
-                    )}
-                </Form.Select>
-            </ConfiguratorFormRow>
-            <ConfiguratorFormRow label='How many LEDs are on the chain?'>
-                <Form.Control type="number"></Form.Control>
-            </ConfiguratorFormRow>
-            <ConfiguratorFormRow label='What is the maximum requested brightness?'>
-                <Form.Control
-                    type="number"
-                    min={0} max={100}
-                    value={state.brightness}
-                    onChange={(e) =>
-                        setState({ ...state, brightness: toInteger(e.target.value) })
-                    }
-                />
-            </ConfiguratorFormRow>
-            <ConfiguratorFormRow label='Keep LEDs on when the connected system is goes to sleep?'>
-                <Form.Check inline type='radio' id='suspend-on' name='suspend' label='Yes' />
-                <Form.Check inline type='radio' id='suspend-off' name='suspend' label='No' />
-            </ConfiguratorFormRow>
-            
-            <ConfiguratorButtonRow
-                label='CONFIGURE LED GROUPS'
-                prevStep={LedConfiguatorSteps.WELCOME}
-                nextStep={LedConfiguatorSteps.GROUPSELECT}
-            />
-        </Container>
-    );
-};
-
-/* STEP 2 - Group Select */
-/* This step will be repeated for each group a user defines */
-const LEDConfigurator_GroupSelect = () => {
-    const { state, setState } = useContext(LEDConfiguratorContext);
-
-    if (state.step !== LedConfiguatorSteps.GROUPSELECT)
-        return <></>;
-    
-    return (
-        <div>
-            <p>Please select the next group of LEDs:</p>
             <Form.Select onChange={(e) => setState({ ...state, step: toInteger(e.target.value) })}>
                 <option value="0">— Select a group —</option>
                 {LED_GROUP_TYPES.map((groupType, i) =>
@@ -266,7 +291,7 @@ const LEDConfigurator_GroupSelect = () => {
                     </option>
                 )}
             </Form.Select>
-        </div>
+        </Container>
     );
 };
 
@@ -277,7 +302,6 @@ const LEDConfiguratorPage = () => {
     
     const [state, setState] = useState({
         brightness: 50,
-        progress: 0,
         step: 0,
         currentGroupType: 0,
     });
@@ -287,10 +311,10 @@ const LEDConfiguratorPage = () => {
     return (
         <Section title={title}>
             <LEDConfiguratorContext.Provider value={{ state, setState }}>
-                <ConfiguratorStepList></ConfiguratorStepList>
-                <LEDConfigurator_Welcome></LEDConfigurator_Welcome>
-                <LEDConfigurator_HardwareConfig></LEDConfigurator_HardwareConfig>
-                <LEDConfigurator_GroupSelect></LEDConfigurator_GroupSelect>
+                {state.step > 0 && <ConfiguratorStepList></ConfiguratorStepList>}
+                <LEDConfigurator_StartStep></LEDConfigurator_StartStep>
+                <LEDConfigurator_HardwareConfigStep></LEDConfigurator_HardwareConfigStep>
+                <LEDConfigurator_GroupConfigStep></LEDConfigurator_GroupConfigStep>
             </LEDConfiguratorContext.Provider>
         </Section>
     );

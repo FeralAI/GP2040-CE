@@ -3,6 +3,7 @@
 $stepCount: 5;
 $font-family: Arial;
 $step-number-height: 2.5rem;
+$step-transition: all .5s;
 
 .configurator {
     &-header {
@@ -12,13 +13,13 @@ $step-number-height: 2.5rem;
     &-step-list {
         display: flex;
         flex: 1 0 auto;
-        height: 6.25rem;
+        height: 6.5rem;
         margin: 0 0.75rem 1.5rem;
         position: relative;
 
         &-progressbar {
             position: absolute;
-            top: 20%;
+            top: 22.5%;
             left: 10%;
             width: 80%;
         }
@@ -29,39 +30,48 @@ $step-number-height: 2.5rem;
 
             &-number {
                 position: absolute;
-                top: 25%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                border-radius: 50%;
+                margin-left: auto;
+                margin-right: auto;
+                top: 10%;
+                left: 0;
+                right: 0;
                 width: $step-number-height;
                 height: $step-number-height;
-                line-height: $step-number-height;
-                background-color: #8A8A8A;
+                border-radius: 50%;
+                background-color: var(--bs-secondary-bg); // Bootstrap progress BG color
                 color: #CECECE;
                 font: bold 1.5rem $font-family;
                 text-align: center;
-                padding-top: .5rem;
+                line-height: $step-number-height;
+                transition: $step-transition;
             }
             
             &-label {
                 position: absolute;
-                top: 50%;
-                left: 0%;
+                margin-left: auto;
+                margin-right: auto;
+                bottom: 0;
+                left: 0;
+                right: 0;
                 word-spacing: 100vw; // Hack to wrap each word
-                font: bold calc($step-number-height * 0.4) $font-family;
                 text-align: center;
-                margin-top: 0.25rem;
                 line-height: 1.5rem;
             }
 
             &.configurator-step__active {
-                // background-color: $theme-tertiary-color;
-                // color: #FFFFFF;
                 cursor: pointer;
+            }
+            .configurator-step__active &-number {
+                background-color: var(--bs-success); // Bootstrap progress FG color
+                
             }
             .configurator-step__current &-number {
                 background-color: $theme-primary-color;
                 color: #FFFFFF;
+                transition: $step-transition;
+            }
+            .configurator-step__current &-label {
+                font-weight: bold;
             }
         }
     }
@@ -86,8 +96,8 @@ $step-number-height: 2.5rem;
             font-weight: bold;
         }
 
-        &-button-row {
-            margin: 1.5rem 0 1rem;
+        div &-button-row {
+            margin: 3rem 0 1rem;
         }
     }
 }

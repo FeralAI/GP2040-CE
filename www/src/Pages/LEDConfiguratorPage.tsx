@@ -1,5 +1,5 @@
 import React, { useState, createContext, useContext, Dispatch, SetStateAction } from 'react';
-import { Button, Card, Container, Form, Row, Col, FormLabel, TabContainer, TabContent, TabPane } from 'react-bootstrap';
+import { Button, Card, Container, Form, Row, Col, FormLabel, ProgressBar, TabContainer, TabContent, TabPane } from 'react-bootstrap';
 
 import Section from '../Components/Section';
 import toInteger from 'lodash/toInteger';
@@ -37,11 +37,13 @@ enum LedConfiguatorSteps {
     COMPLETE    = 5,
 }
 
+const LedConfiguratorStepCount = LedConfiguatorSteps.COMPLETE;
+
 const ConfigurationStepTitles = [
     'Start Page',
     'Hardware Configuration',
-    'Group Select',
     'Group Configuration',
+    'Effect Configuration',
     'Confirm Configuration',
     'Configuration Complete'
 ];
@@ -80,20 +82,26 @@ const ConfiguratorStepList = () => {
     const { state, setState } = useContext(LEDConfiguratorContext);
 
     const steps = Object.values(LedConfiguatorSteps)
-        .filter((value) => typeof value === "string");
+        .filter(value => typeof value === "number")
+        .map(value => toInteger(value));
 
-    steps.splice(0, 1); // Exclude WELCOME step
+    const progress = ((state.step - 1) / (LedConfiguratorStepCount - 1)) * 100;
 
     return (
         <div className='configurator-step-list'>
-            {steps.map((step, i) =>
+            <ProgressBar
+                now={progress}
+                variant='success'
+                className='configurator-step-list-progressbar'
+            />
+            {steps.filter((s) => s > 0).map((step) =>
                 <div
                     key={`configurator-step-list-item-${step}`}
-                    className={`configurator-step-list-item ${i < state.step && 'configurator-step__active'}`}
+                    className={`configurator-step-list-item ${step <= state.step && 'configurator-step__active'} ${step === state.step && 'configurator-step__current'}`}
+                    onClick={() => step < state.step && setState({ ...state, step })}
                 >
-                    <div className='configurator-step-list-item-progress'></div>
-                    <div className='configurator-step-list-item-number'>{i + 1}</div>
-                    <span className='configurator-step-list-item-label'>{ConfigurationStepTitles[i + 1]}</span>
+                    <div className='configurator-step-list-item-number'>{step}</div>
+                    <span className='configurator-step-list-item-label'>{ConfigurationStepTitles[step]}</span>
                 </div>
             )}
         </div>
@@ -269,6 +277,7 @@ const LEDConfiguratorPage = () => {
     
     const [state, setState] = useState({
         brightness: 50,
+        progress: 0,
         step: 0,
         currentGroupType: 0,
     });

@@ -1,3 +1,5 @@
+@import '../scss/variables.scss';
+
 $stepCount: 5;
 $font-family: Arial;
 $step-number-height: 2.5rem;
@@ -12,22 +14,18 @@ $step-number-height: 2.5rem;
         flex: 1 0 auto;
         height: 6.25rem;
         margin: 0 0.75rem 1.5rem;
+        position: relative;
+
+        &-progressbar {
+            position: absolute;
+            top: 20%;
+            left: 10%;
+            width: 80%;
+        }
 
         &-item {
             position: relative;
             width: calc(100% / $stepCount);
-
-            &-progress {
-                position: absolute;
-                top: 25%;
-                left: 0%;
-                height: 6px;
-                width: 100%;
-                background-color: #484848;
-            }
-            .configurator-step__active &-progress {
-                background-color: #880000;
-            }
 
             &-number {
                 position: absolute;
@@ -40,13 +38,9 @@ $step-number-height: 2.5rem;
                 line-height: $step-number-height;
                 background-color: #8A8A8A;
                 color: #CECECE;
-                font: bold calc($step-number-height * 0.8) $font-family;
+                font: bold 1.5rem $font-family;
                 text-align: center;
-                padding-top: calc($step-number-height * 0.05);
-            }
-            .configurator-step__active &-number {
-                background-color: #008800;
-                color: #FFFFFF;
+                padding-top: .5rem;
             }
             
             &-label {
@@ -54,10 +48,20 @@ $step-number-height: 2.5rem;
                 top: 50%;
                 left: 0%;
                 word-spacing: 100vw; // Hack to wrap each word
-                font: bold calc($step-number-height * 0.35) $font-family;
+                font: bold calc($step-number-height * 0.4) $font-family;
                 text-align: center;
                 margin-top: 0.25rem;
-                line-height: 1.1rem;
+                line-height: 1.5rem;
+            }
+
+            &.configurator-step__active {
+                // background-color: $theme-tertiary-color;
+                // color: #FFFFFF;
+                cursor: pointer;
+            }
+            .configurator-step__current &-number {
+                background-color: $theme-primary-color;
+                color: #FFFFFF;
             }
         }
     }

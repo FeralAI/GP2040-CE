@@ -1,0 +1,89 @@
+$stepCount: 5;
+$font-family: Arial;
+$step-number-height: 2.5rem;
+
+.configurator {
+    &-header {
+        margin: 0.5rem 0 2.5rem;
+    }
+
+    &-step-list {
+        display: flex;
+        flex: 1 0 auto;
+        height: 6.25rem;
+        margin: 0 0.75rem 1.5rem;
+
+        &-item {
+            position: relative;
+            width: calc(100% / $stepCount);
+
+            &-progress {
+                position: absolute;
+                top: 25%;
+                left: 0%;
+                height: 6px;
+                width: 100%;
+                background-color: #484848;
+            }
+            .configurator-step__active &-progress {
+                background-color: #880000;
+            }
+
+            &-number {
+                position: absolute;
+                top: 25%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                width: $step-number-height;
+                height: $step-number-height;
+                line-height: $step-number-height;
+                background-color: #8A8A8A;
+                color: #CECECE;
+                font: bold calc($step-number-height * 0.8) $font-family;
+                text-align: center;
+                padding-top: calc($step-number-height * 0.05);
+            }
+            .configurator-step__active &-number {
+                background-color: #008800;
+                color: #FFFFFF;
+            }
+            
+            &-label {
+                position: absolute;
+                top: 50%;
+                left: 0%;
+                word-spacing: 100vw; // Hack to wrap each word
+                font: bold calc($step-number-height * 0.35) $font-family;
+                text-align: center;
+                margin-top: 0.25rem;
+                line-height: 1.1rem;
+            }
+        }
+    }
+
+    &-note {
+        padding: 0.75rem 1rem 1rem;
+        margin-top: 2rem;
+
+        &-list {
+            margin-bottom: 0;
+        }
+    }
+
+    &-form {
+
+        &-row {
+            vertical-align: middle;
+            margin-bottom: 1rem;
+        }
+
+        &-label {
+            font-weight: bold;
+        }
+
+        &-button-row {
+            margin: 1.5rem 0 1rem;
+        }
+    }
+}

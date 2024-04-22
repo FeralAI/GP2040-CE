@@ -29,12 +29,12 @@ const LED_COLOR_FORMATS = [
 ];
 
 enum LedConfiguatorSteps {
-    WELCOME     = 0,
-    HARDWARE    = 1,
-    GROUPSELECT = 2,
-    GROUPCONFIG = 3,
-    CONFIRM     = 4,
-    COMPLETE    = 5,
+    WELCOME  = 0,
+    HARDWARE = 1,
+    GROUPS   = 2,
+    EFFECTS  = 3,
+    CONFIRM  = 4,
+    COMPLETE = 5,
 }
 
 const LedConfiguratorStepCount = LedConfiguatorSteps.COMPLETE;
@@ -42,10 +42,10 @@ const LedConfiguratorStepCount = LedConfiguatorSteps.COMPLETE;
 const ConfigurationStepTitles = [
     'Start Page',
     'Hardware Configuration',
-    'Group Configuration',
-    'Effect Configuration',
-    'Confirm Configuration',
-    'Configuration Complete'
+    'Group Definitons',
+    'Configure Effects',
+    'Confirm Settings',
+    'Setup Complete'
 ];
 
 // Define and create a context to make state management easier
@@ -168,7 +168,7 @@ const LEDConfigurator_StartStep = () => {
                 </p>
             </ConfiguratorHeader>
             <ConfiguratorButtonRow
-                label='CONFIGURE RGB LED HARDWARE'
+                label={ConfigurationStepTitles[LedConfiguatorSteps.HARDWARE]}
                 prevStep={undefined}
                 nextStep={LedConfiguatorSteps.HARDWARE}
             />
@@ -189,7 +189,7 @@ const LEDConfigurator_HardwareConfigStep = () => {
         <Container fluid>
             <ConfiguratorHeader>
                 <ConfiguratorNote>
-                    <strong>RGB LED HARDWARE CONFIGURATION TIPS</strong>
+                    <strong>HARDWARE CONFIGURATION TIPS</strong>
                     <ul className='configurator-note-list'>
                         <li><strong>RGB LEDs connect, in series (daisy-chained), to a single data line</strong>. This is referred to as your <strong>LED Chain</strong>.</li>
                         <li><strong>The maximum LED brightness <em>may</em> be limited</strong> by the type and number of LEDs in use.</li>
@@ -201,7 +201,7 @@ const LEDConfigurator_HardwareConfigStep = () => {
 
             <ConfiguratorFormRow label='Which pin is the RGB LED data line connected to?'>
                 <Form.Select>
-                    <option value="0">PIN0</option>
+                    <option value="0">PIN00</option>
                 </Form.Select>
             </ConfiguratorFormRow>
             <ConfiguratorFormRow label='What type are the RGB LEDs?'>
@@ -251,9 +251,9 @@ const LEDConfigurator_HardwareConfigStep = () => {
             }
             
             <ConfiguratorButtonRow
-                label='CONFIGURE RGB LED GROUPS'
+                label={ConfigurationStepTitles[LedConfiguatorSteps.GROUPS]}
                 prevStep={LedConfiguatorSteps.WELCOME}
-                nextStep={LedConfiguatorSteps.GROUPSELECT}
+                nextStep={LedConfiguatorSteps.GROUPS}
             />
         </Container>
     );
@@ -264,33 +264,94 @@ const LEDConfigurator_HardwareConfigStep = () => {
 const LEDConfigurator_GroupConfigStep = () => {
     const { state, setState } = useContext(LEDConfiguratorContext);
 
-    if (state.step !== LedConfiguatorSteps.GROUPSELECT)
+    if (state.step !== LedConfiguatorSteps.GROUPS)
         return <></>;
     
     return (
         <Container fluid>
             <ConfiguratorHeader>
-                <p>
-                    LEDs are grouped by their behavior on the controller.
-                </p>
                 <ConfiguratorNote>
-                    <strong>LED HARDWARE CONFIGURATION TIPS</strong>
+                    <strong>GROUP DEFINITION TIPS</strong>
                     <ul className='configurator-note-list'>
-                        <li><strong>All LEDs must be connected to a single data line</strong>.</li>
-                        <li>The <strong>LED chain</strong> is the sequence of LED modules connected to the LED data line.</li>
-                        <li>If you're using NeoPixel modules or clones, the default type and color format should be sufficient.</li>
-                        <li>The maximum LED brightness <em>may</em> be limited by the type and number of LEDs in use.</li>
+                        <li>
+                            An <strong>LED Group</strong> is a logical segment of the physical LED Chain that is designated
+                            for certain firmware behaviors.
+                        </li>
+                        <li>
+                            You may add more than one of any group type. For example, action buttons and aux buttons may be part
+                            of different areas of the LED Chain. In this case, you can allocate 2 <strong>Button</strong> groups,
+                            one for handling each area.
+                        </li>
+                        <li>An LED Group is not limited to a physical segement of LEDs.</li>
                     </ul>
                 </ConfiguratorNote>
             </ConfiguratorHeader>
-            <Form.Select onChange={(e) => setState({ ...state, step: toInteger(e.target.value) })}>
-                <option value="0">— Select a group —</option>
-                {LED_GROUP_TYPES.map((groupType, i) =>
-                    <option key={`group-select-${i}`} value={groupType.value}>
-                        {groupType.label}
-                    </option>
-                )}
-            </Form.Select>
+            <h5>CONFIGURED GROUPS</h5>
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <th>Group Type</th>
+                    <th>LED Index Range</th>
+                    <th>Settings</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Buttons</td>
+                        <td>0-15</td>
+                        <td>
+                            LED Per Button: 2<br />
+                            Button Order: B1 B2 R2 L2 L1 R1 B4 B3
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Status LEDs</td>
+                        <td>16-19</td>
+                        <td>
+                            Status LED Type: Player LEDs<br />
+                            Color: #FFFFFF<br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Status LEDs</td>
+                        <td>20</td>
+                        <td>
+                            Status LED Type: Turbo LED<br />
+                            Color: #FF0000<br />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Case LED strips</td>
+                        <td>21-40</td>
+                        <td>
+                            LEDs Per Strip: 10<br />
+                            Number of Strips: 2
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Case LED matrix</td>
+                        <td>41-100</td>
+                        <td>
+                            LEDs Per Strip: 10<br />
+                            Number of Strips: 6<br />
+                            Strip Wrapping: Zig-zag
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <ConfiguratorFormRow label='Select the next group to configure:'>
+                <Form.Select onChange={(e) => setState({ ...state, step: toInteger(e.target.value) })}>
+                    <option value="0">— Select a group —</option>
+                    {LED_GROUP_TYPES.map((groupType, i) =>
+                        <option key={`group-select-${i}`} value={groupType.value}>
+                            {groupType.label}
+                        </option>
+                    )}
+                </Form.Select>
+            </ConfiguratorFormRow>
+            <ConfiguratorButtonRow
+                label={ConfigurationStepTitles[LedConfiguatorSteps.EFFECTS]}
+                prevStep={LedConfiguatorSteps.HARDWARE}
+                nextStep={LedConfiguatorSteps.EFFECTS}
+            />
         </Container>
     );
 };
